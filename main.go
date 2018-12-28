@@ -13,7 +13,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
-	"runtime"
 
 	"golang.org/x/sys/windows"
 )
