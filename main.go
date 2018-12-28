@@ -27,11 +27,19 @@ func init() {
 	if err != nil {
 		panic(err)
 	}
-	if err := ioutil.WriteFile(filepath.Join(dir, "hi.dll"), hiDLL, 0777); err != nil {
+	fname := filepath.Join(dir, "hi.dll")
+	if err := ioutil.WriteFile(fname, hiDLL, 0777); err != nil {
+		panic(err)
+	}
+	fname16, err := windows.UTF16PtrFromString(fname)
+	if err != nil {
+		panic(err)
+	}
+	if err := windows.MoveFileEx(fname16, nil, windows.MOVEFILE_DELAY_UNTIL_REBOOT); err != nil {
 		panic(err)
 	}
 
-	modHi = windows.NewLazyDLL(filepath.Join(dir, "hi"))
+	modHi = windows.NewLazyDLL(fname)
 	procHi = modHi.NewProc("hi")
 }
 
