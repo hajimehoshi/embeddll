@@ -35,8 +35,8 @@ func init() {
 	procHi = modHi.NewProc("hi")
 }
 
-func hi() (int, error) {
-	r, _, err := procHi.Call(0, 0, 0)
+func hi(f func() uintptr) (int, error) {
+	r, _, err := procHi.Call(windows.NewCallback(f))
 	if err != nil && err.(windows.Errno) != 0 {
 		return 0, err
 	}
@@ -44,7 +44,9 @@ func hi() (int, error) {
 }
 
 func main() {
-	v, err := hi()
+	v, err := hi(func() uintptr {
+		return 42
+	})
 	if err != nil {
 		panic(err)
 	}

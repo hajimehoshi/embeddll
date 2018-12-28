@@ -1,5 +1,9 @@
 // +build ignore
 
-__declspec(dllexport) int hi() {
-  return 42;
+#include <stdlib.h>
+
+typedef uintptr_t (*callback)();
+
+__declspec(dllexport) int hi(callback cb) {
+  return cb();
 }
