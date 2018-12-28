@@ -18,11 +18,14 @@ import (
 )
 
 var (
+	handle windows.Handle
 	modHi  *windows.LazyDLL
 	procHi *windows.LazyProc
 )
 
 func init() {
+	const FILE_FLAG_DELETE_ON_CLOSE = 0x04000000
+
 	dir, err := ioutil.TempDir("", "embeddll")
 	if err != nil {
 		panic(err)
@@ -31,10 +34,23 @@ func init() {
 	if err := ioutil.WriteFile(fname, hiDLL, 0777); err != nil {
 		panic(err)
 	}
+
 	fname16, err := windows.UTF16PtrFromString(fname)
 	if err != nil {
 		panic(err)
 	}
+	h, err := windows.CreateFile(fname16,
+		windows.GENERIC_READ,
+		windows.FILE_SHARE_READ | windows.FILE_SHARE_WRITE | windows.FILE_SHARE_DELETE,
+		nil,
+		windows.OPEN_EXISTING,
+		windows.FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE,
+		0)
+	if err != nil {
+		panic(err)
+	}
+	handle = h
+
 	if err := windows.MoveFileEx(fname16, nil, windows.MOVEFILE_DELAY_UNTIL_REBOOT); err != nil {
 		panic(err)
 	}
