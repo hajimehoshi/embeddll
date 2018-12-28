@@ -51,10 +51,6 @@ func init() {
 	}
 	handle = h
 
-	if err := windows.MoveFileEx(fname16, nil, windows.MOVEFILE_DELAY_UNTIL_REBOOT); err != nil {
-		panic(err)
-	}
-
 	modHi = windows.NewLazyDLL(fname)
 	procHi = modHi.NewProc("hi")
 }
