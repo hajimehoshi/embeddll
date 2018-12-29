@@ -1,11 +1,14 @@
 //go:generate x86_64-w64-mingw32-gcc -c -o hi_amd64.o hi.c
 //go:generate x86_64-w64-mingw32-gcc -shared -o hi_amd64.dll -Wl,--no-insert-timestamp hi_amd64.o
+//go:generate file2byteslice -input hi_amd64.dll -output hidll_amd64.go -package main -var hiDLL
+//go:generate rm hi_amd64.dll hi_amd64.o
+
 //go:generate i686-w64-mingw32-gcc -c -o hi_386.o hi.c
 //go:generate i686-w64-mingw32-gcc -shared -o hi_386.dll -Wl,--no-insert-timestamp hi_386.o
-//go:generate file2byteslice -input hi_amd64.dll -output hidll_amd64.go -package main -var hiDLL
 //go:generate file2byteslice -input hi_386.dll -output hidll_386.go -package main -var hiDLL
+//go:generate rm hi_386.dll hi_386.o
+
 //go:generate gofmt -s -w .
-//go:generate rm hi_amd64.dll hi_386.dll hi_amd64.o hi_386.o
 
 package main
 
