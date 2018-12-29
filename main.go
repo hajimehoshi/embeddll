@@ -16,7 +16,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"path/filepath"
 
 	"golang.org/x/sys/windows"
 )
@@ -27,17 +26,30 @@ var (
 	procHi *windows.LazyProc
 )
 
+func createTmpDLL(content []byte) (string, error) {
+	f, err := ioutil.TempFile("", "hi.*.dll")
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	fn := f.Name()
+
+	if _, err := f.Write(content); err != nil {
+		return "", err
+	}
+
+	return fn, nil
+}
+
 func initialize() error {
 	const FILE_FLAG_DELETE_ON_CLOSE = 0x04000000
 
-	dir, err := ioutil.TempDir("", "embeddll")
+	fn, err := createTmpDLL(hiDLL)
 	if err != nil {
 		return err
 	}
-	dllfn = filepath.Join(dir, "hi.dll")
-	if err := ioutil.WriteFile(dllfn, hiDLL, 0777); err != nil {
-		return err
-	}
+	dllfn = fn
 
 	modHi = windows.NewLazyDLL(dllfn)
 	procHi = modHi.NewProc("hi")
