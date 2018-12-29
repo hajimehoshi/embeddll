@@ -43,8 +43,6 @@ func createTmpDLL(content []byte) (string, error) {
 }
 
 func initialize() error {
-	const FILE_FLAG_DELETE_ON_CLOSE = 0x04000000
-
 	fn, err := createTmpDLL(hiDLL)
 	if err != nil {
 		return err
