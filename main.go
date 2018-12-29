@@ -15,30 +15,43 @@ package main
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 
 	"golang.org/x/sys/windows"
 )
 
 var (
+	dllfn  string
 	modHi  *windows.LazyDLL
 	procHi *windows.LazyProc
 )
 
-func init() {
+func initialize() error {
 	const FILE_FLAG_DELETE_ON_CLOSE = 0x04000000
 
 	dir, err := ioutil.TempDir("", "embeddll")
 	if err != nil {
-		panic(err)
+		return err
 	}
-	fname := filepath.Join(dir, "hi.dll")
-	if err := ioutil.WriteFile(fname, hiDLL, 0777); err != nil {
-		panic(err)
+	dllfn = filepath.Join(dir, "hi.dll")
+	if err := ioutil.WriteFile(dllfn, hiDLL, 0777); err != nil {
+		return err
 	}
 
-	modHi = windows.NewLazyDLL(fname)
+	modHi = windows.NewLazyDLL(dllfn)
 	procHi = modHi.NewProc("hi")
+	return nil
+}
+
+func terminate() error {
+	if err := windows.FreeLibrary(windows.Handle(modHi.Handle())); err != nil {
+		return err
+	}
+	if err := os.Remove(dllfn); err != nil {
+		return err
+	}
+	return nil
 }
 
 func hi(f func() uintptr) (int, error) {
@@ -50,6 +63,15 @@ func hi(f func() uintptr) (int, error) {
 }
 
 func main() {
+	if err := initialize(); err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := terminate(); err != nil {
+			panic(err)
+		}
+	}()
+
 	v, err := hi(func() uintptr {
 		return 42
 	})
