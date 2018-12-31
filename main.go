@@ -63,7 +63,7 @@ func terminate() error {
 }
 
 func hi(f func() uintptr) (int, error) {
-	r, _, err := procHi.Call(windows.NewCallback(f))
+	r, _, err := procHi.Call(windows.NewCallbackCDecl(f))
 	if err != nil && err.(windows.Errno) != 0 {
 		return 0, err
 	}
